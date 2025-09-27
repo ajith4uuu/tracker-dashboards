@@ -7,13 +7,6 @@ import {
   Typography,
   Avatar,
   Chip,
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineDot,
-  TimelineConnector,
-  TimelineContent,
-  TimelineOppositeContent,
   Paper,
   Alert,
   AlertTitle,
@@ -31,6 +24,7 @@ import {
   LinearProgress,
   Tooltip,
 } from '@mui/material';
+import { Timeline, TimelineItem, TimelineSeparator, TimelineDot, TimelineConnector, TimelineContent, TimelineOppositeContent } from '@mui/lab';
 import {
   Person,
   Warning,

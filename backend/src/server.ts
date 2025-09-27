@@ -122,24 +122,23 @@ class Server {
   }
 
   private async initializeServices(): Promise<void> {
+    // Initialize BigQuery (optional in local/dev environments)
     try {
-      // Initialize BigQuery
       await initializeBigQuery();
       logger.info('BigQuery initialized successfully');
-
-      // Initialize Redis (optional, will fail gracefully if not available)
-      try {
-        await initializeRedis();
-        logger.info('Redis initialized successfully');
-      } catch (error) {
-        logger.warn('Redis initialization failed, using in-memory cache', error);
-      }
-
-      logger.info('All services initialized successfully');
     } catch (error) {
-      logger.error('Service initialization failed', error);
-      throw error;
+      logger.warn('BigQuery initialization skipped or failed; continuing without BigQuery', error);
     }
+
+    // Initialize Redis (optional, will fail gracefully if not available)
+    try {
+      await initializeRedis();
+      logger.info('Redis initialized successfully');
+    } catch (error) {
+      logger.warn('Redis initialization failed, using in-memory cache', error);
+    }
+
+    logger.info('Service initialization completed');
   }
 
   public async start(): Promise<void> {

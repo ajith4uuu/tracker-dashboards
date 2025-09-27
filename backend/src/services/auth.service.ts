@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import NodeCache from 'node-cache';
 import { logger } from '../utils/logger';
@@ -28,14 +28,14 @@ interface TokenPayload {
 
 class AuthService {
   private emailServiceUrl: string;
-  private jwtSecret: string;
-  private jwtExpiresIn: string;
+  private jwtSecret: Secret;
+  private jwtExpiresIn: string | number;
   private localCache: NodeCache;
   private emailServiceTimeout: number;
 
   constructor() {
     this.emailServiceUrl = process.env.EMAIL_SERVICE_URL || 'https://email-backend-1062713216421.northamerica-northeast2.run.app';
-    this.jwtSecret = process.env.JWT_SECRET || 'default-secret-change-in-production';
+    this.jwtSecret = (process.env.JWT_SECRET || 'default-secret-change-in-production') as Secret;
     this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
     this.emailServiceTimeout = parseInt(process.env.EMAIL_SERVICE_TIMEOUT || '30000', 10);
     
@@ -67,7 +67,6 @@ class AuthService {
 
       if (response.data.success) {
         // Store OTP session in cache
-        const sessionId = uuidv4();
         const sessionData = {
           email,
           timestamp: new Date(),
@@ -210,16 +209,12 @@ class AuthService {
    * Generate JWT token
    */
   generateToken(payload: { email: string; userId: string }): string {
-    return jwt.sign(
-      {
-        userId: payload.userId,
-        email: payload.email,
-      },
-      this.jwtSecret,
-      {
-        expiresIn: this.jwtExpiresIn,
-      }
-    );
+    const tokenPayload = {
+      userId: payload.userId,
+      email: payload.email,
+    };
+    const options: SignOptions = { expiresIn: this.jwtExpiresIn as any };
+    return jwt.sign(tokenPayload, this.jwtSecret, options);
   }
 
   /**

@@ -1,0 +1,193 @@
+groups:
+  - name: progress_tracker_alerts
+    interval: 30s
+    rules:
+      # Service Down Alerts
+      - alert: BackendDown
+        expr: up{job="backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: backend
+        annotations:
+          summary: "Backend service is down"
+          description: "Backend service {{ $labels.instance }} has been down for more than 2 minutes."
+
+      - alert: FrontendDown
+        expr: up{job="blackbox", instance=~".*frontend.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: frontend
+        annotations:
+          summary: "Frontend service is down"
+          description: "Frontend service {{ $labels.instance }} has been down for more than 2 minutes."
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance {{ $labels.instance }} has been down for more than 2 minutes."
+
+      # Performance Alerts
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile response time is above 500ms (current value: {{ $value }}s)"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% (current value: {{ $value }})"
+
+      # Resource Alerts
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / (1024 * 1024 * 1024) > 1.8
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High memory usage"
+          description: "Process memory usage is above 1.8GB (current value: {{ $value }}GB)"
+
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is above 80% (current value: {{ $value }}%)"
+
+      # Business Logic Alerts
+      - alert: LowPatientActivity
+        expr: increase(patient_events_total[1h]) < 10
+        for: 2h
+        labels:
+          severity: info
+          service: business
+        annotations:
+          summary: "Low patient activity detected"
+          description: "Less than 10 patient events in the last hour"
+
+      - alert: HighUploadFailureRate
+        expr: rate(file_upload_failures_total[15m]) / rate(file_upload_attempts_total[15m]) > 0.1
+        for: 15m
+        labels:
+          severity: warning
+          service: upload
+        annotations:
+          summary: "High file upload failure rate"
+          description: "Upload failure rate is above 10% (current value: {{ $value }})"
+
+      - alert: BigQueryConnectionFailure
+        expr: bigquery_connection_status == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: bigquery
+        annotations:
+          summary: "BigQuery connection failure"
+          description: "Cannot connect to BigQuery for more than 5 minutes"
+
+      - alert: GeminiAPIFailure
+        expr: gemini_api_failures_total > 10
+        for: 10m
+        labels:
+          severity: warning
+          service: gemini
+        annotations:
+          summary: "Gemini API failures detected"
+          description: "More than 10 Gemini API failures in the last 10 minutes"
+
+      # Authentication Alerts
+      - alert: HighOTPFailureRate
+        expr: rate(otp_verification_failures_total[15m]) / rate(otp_verification_attempts_total[15m]) > 0.3
+        for: 15m
+        labels:
+          severity: warning
+          service: auth
+        annotations:
+          summary: "High OTP verification failure rate"
+          description: "OTP failure rate is above 30% (current value: {{ $value }})"
+
+      - alert: SuspiciousLoginActivity
+        expr: increase(login_attempts_total{status="failed"}[5m]) > 50
+        for: 5m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Suspicious login activity detected"
+          description: "More than 50 failed login attempts in the last 5 minutes"
+
+      # Data Pipeline Alerts
+      - alert: DataProcessingBacklog
+        expr: pending_data_processing_tasks > 100
+        for: 30m
+        labels:
+          severity: warning
+          service: data_pipeline
+        annotations:
+          summary: "Data processing backlog detected"
+          description: "More than 100 pending data processing tasks (current value: {{ $value }})"
+
+      - alert: BigQueryQuotaExceeded
+        expr: bigquery_quota_usage_ratio > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          service: bigquery
+        annotations:
+          summary: "BigQuery quota nearly exceeded"
+          description: "BigQuery quota usage is above 90% (current value: {{ $value }})"
+
+      # SLA Alerts
+      - alert: SLAViolation
+        expr: (1 - rate(http_requests_total{status!~"5.."}[5m]) / rate(http_requests_total[5m])) < 0.999
+        for: 10m
+        labels:
+          severity: critical
+          service: sla
+        annotations:
+          summary: "SLA violation - Availability below 99.9%"
+          description: "Service availability is below 99.9% SLA (current value: {{ $value }})"
+
+  - name: recording_rules
+    interval: 15s
+    rules:
+      # Request rate
+      - record: job:http_requests:rate5m
+        expr: sum(rate(http_requests_total[5m])) by (job, method, status)
+
+      # Error rate
+      - record: job:http_errors:rate5m
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (job)
+
+      # P95 latency
+      - record: job:http_latency:p95:5m
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le))
+
+      # Memory usage
+      - record: job:memory_usage:bytes
+        expr: sum(process_resident_memory_bytes) by (job)
+
+      # Active users
+      - record: job:active_users:5m
+        expr: count(count by (user_id) (rate(user_activity_total[5m]) > 0))

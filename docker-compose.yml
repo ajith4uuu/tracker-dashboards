@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: progress-tracker-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - JWT_SECRET=your-super-secret-jwt-key
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - EMAIL_SERVICE_URL=https://email-backend-1062713216421.northamerica-northeast2.run.app
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - redis
+    networks:
+      - progress-tracker-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: progress-tracker-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - progress-tracker-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: progress-tracker-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - progress-tracker-network
+    restart: unless-stopped
+
+networks:
+  progress-tracker-network:
+    driver: bridge
+
+volumes:
+  redis-data:

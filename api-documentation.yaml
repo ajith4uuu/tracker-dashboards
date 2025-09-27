@@ -1,0 +1,609 @@
+openapi: 3.0.0
+info:
+  title: PROgress Tracker API
+  description: Breast Cancer Patient Survey Analytics Platform API
+  version: 1.0.0
+  contact:
+    name: Support Team
+    email: support@progresstracker.ca
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://api.progresstracker.ca
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication endpoints
+  - name: Upload
+    description: File upload endpoints
+  - name: Analytics
+    description: Analytics and reporting endpoints
+  - name: Patients
+    description: Patient management endpoints
+  - name: Health
+    description: System health endpoints
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: true
+        message:
+          type: string
+        data:
+          type: object
+
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+        lastLogin:
+          type: string
+          format: date-time
+
+    Patient:
+      type: object
+      properties:
+        patientId:
+          type: string
+        totalEvents:
+          type: integer
+        firstEvent:
+          type: string
+          format: date-time
+        lastEvent:
+          type: string
+          format: date-time
+        uniqueEvents:
+          type: integer
+        avgSatisfaction:
+          type: number
+        daysInactive:
+          type: integer
+
+    AnalyticsData:
+      type: object
+      properties:
+        totalPatients:
+          type: integer
+        totalEvents:
+          type: integer
+        eventDistribution:
+          type: array
+          items:
+            type: object
+            properties:
+              eventName:
+                type: string
+              count:
+                type: integer
+        completionRates:
+          type: array
+          items:
+            type: object
+
+paths:
+  # Authentication Endpoints
+  /api/auth/send-otp:
+    post:
+      tags:
+        - Authentication
+      summary: Send OTP to email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        200:
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/verify-otp:
+    post:
+      tags:
+        - Authentication
+      summary: Verify OTP and login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - otp
+              properties:
+                email:
+                  type: string
+                  format: email
+                otp:
+                  type: string
+                  pattern: '^[0-9]{6}$'
+      responses:
+        200:
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        401:
+          description: Invalid OTP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /api/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  # Upload Endpoints
+  /api/upload/single:
+    post:
+      tags:
+        - Upload
+      summary: Upload single file
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      fileName:
+                        type: string
+                      recordsProcessed:
+                        type: integer
+                      insights:
+                        type: array
+                        items:
+                          type: string
+
+  /api/upload/multiple:
+    post:
+      tags:
+        - Upload
+      summary: Upload multiple files
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        200:
+          description: Files uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /api/upload/history:
+    get:
+      tags:
+        - Upload
+      summary: Get upload history
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Upload history retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  uploads:
+                    type: array
+                    items:
+                      type: object
+
+  # Analytics Endpoints
+  /api/analytics/dashboard:
+    get:
+      tags:
+        - Analytics
+      summary: Get dashboard analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: timeRange
+          schema:
+            type: string
+            enum: [day, week, month, year]
+          description: Time range for analytics
+      responses:
+        200:
+          description: Analytics data retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AnalyticsData'
+                  insights:
+                    type: object
+
+  /api/analytics/trends:
+    get:
+      tags:
+        - Analytics
+      summary: Get trend analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: metric
+          schema:
+            type: string
+      responses:
+        200:
+          description: Trends data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /api/analytics/funnel:
+    get:
+      tags:
+        - Analytics
+      summary: Get funnel analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: events
+          required: true
+          schema:
+            type: string
+          description: Comma-separated list of events
+      responses:
+        200:
+          description: Funnel data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /api/analytics/cohorts:
+    get:
+      tags:
+        - Analytics
+      summary: Get cohort analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: cohortBy
+          schema:
+            type: string
+            enum: [week, month]
+        - in: query
+          name: metric
+          schema:
+            type: string
+      responses:
+        200:
+          description: Cohort data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  # Patients Endpoints
+  /api/patients:
+    get:
+      tags:
+        - Patients
+      summary: Get patients list
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        200:
+          description: Patients list retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  patients:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Patient'
+                  pagination:
+                    type: object
+
+  /api/patients/{patientId}/journey:
+    get:
+      tags:
+        - Patients
+      summary: Get patient journey
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: patientId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Patient journey retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /api/patients/{patientId}/analytics:
+    get:
+      tags:
+        - Patients
+      summary: Get patient analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: patientId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Patient analytics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /api/patients/{patientId}/notes:
+    get:
+      tags:
+        - Patients
+      summary: Get patient notes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: patientId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Patient notes retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+    post:
+      tags:
+        - Patients
+      summary: Add patient note
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: patientId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - note
+              properties:
+                note:
+                  type: string
+      responses:
+        200:
+          description: Note added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  # Health Endpoints
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Basic health check
+      responses:
+        200:
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                  uptime:
+                    type: number
+
+  /readiness:
+    get:
+      tags:
+        - Health
+      summary: Readiness check
+      responses:
+        200:
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  checks:
+                    type: object
+
+  /metrics:
+    get:
+      tags:
+        - Health
+      summary: Get Prometheus metrics
+      responses:
+        200:
+          description: Metrics retrieved
+          content:
+            text/plain:
+              schema:
+                type: string

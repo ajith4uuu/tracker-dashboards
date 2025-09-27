@@ -1,0 +1,159 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: northamerica-northeast2
+  BACKEND_SERVICE_NAME: progress-tracker-backend
+  FRONTEND_SERVICE_NAME: progress-tracker-frontend
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./backend
+      run: npm ci
+    
+    - name: Run linting
+      working-directory: ./backend
+      run: npm run lint
+    
+    - name: Run tests
+      working-directory: ./backend
+      run: npm test
+    
+    - name: Build
+      working-directory: ./backend
+      run: npm run build
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Run linting
+      working-directory: ./frontend
+      run: npm run lint
+    
+    - name: Run tests
+      working-directory: ./frontend
+      run: npm test -- --coverage --watchAll=false
+    
+    - name: Build
+      working-directory: ./frontend
+      run: npm run build
+
+  build-and-deploy:
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+    
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v1'
+    
+    - name: 'Configure Docker for Artifact Registry'
+      run: |
+        gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+    
+    - name: Build and Push Backend Docker Image
+      run: |
+        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/backend:${{ github.sha }} ./backend
+        docker tag ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/backend:${{ github.sha }} \
+          ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/backend:latest
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/backend:${{ github.sha }}
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/backend:latest
+    
+    - name: Build and Push Frontend Docker Image
+      run: |
+        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/frontend:${{ github.sha }} ./frontend
+        docker tag ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/frontend:${{ github.sha }} \
+          ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/frontend:latest
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/frontend:${{ github.sha }}
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/frontend:latest
+    
+    - name: Deploy Backend to Cloud Run
+      run: |
+        gcloud run deploy ${{ env.BACKEND_SERVICE_NAME }} \
+          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/backend:${{ github.sha }} \
+          --platform managed \
+          --region ${{ env.GCP_REGION }} \
+          --allow-unauthenticated \
+          --set-env-vars "NODE_ENV=production,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }},EMAIL_SERVICE_URL=https://email-backend-1062713216421.northamerica-northeast2.run.app" \
+          --set-secrets "JWT_SECRET=jwt-secret:latest,GEMINI_API_KEY=gemini-api-key:latest"
+    
+    - name: Deploy Frontend to Cloud Run
+      run: |
+        gcloud run deploy ${{ env.FRONTEND_SERVICE_NAME }} \
+          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/progress-tracker/frontend:${{ github.sha }} \
+          --platform managed \
+          --region ${{ env.GCP_REGION }} \
+          --allow-unauthenticated
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run Trivy vulnerability scanner for Backend
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: './backend'
+        format: 'sarif'
+        output: 'backend-security-results.sarif'
+    
+    - name: Run Trivy vulnerability scanner for Frontend
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: './frontend'
+        format: 'sarif'
+        output: 'frontend-security-results.sarif'
+    
+    - name: Upload Backend Security Results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'backend-security-results.sarif'
+    
+    - name: Upload Frontend Security Results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'frontend-security-results.sarif'

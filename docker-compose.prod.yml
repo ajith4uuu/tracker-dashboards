@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  backend:
+    image: ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/progress-tracker/backend:latest
+    container_name: progress-tracker-backend
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - JWT_SECRET=${JWT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - BIGQUERY_DATASET=${BIGQUERY_DATASET:-progress_tracker}
+      - GCP_LOCATION=${GCP_REGION:-northamerica-northeast2}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - EMAIL_SERVICE_URL=https://email-backend-1062713216421.northamerica-northeast2.run.app
+      - REDIS_URL=redis://redis:6379
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+    depends_on:
+      - redis
+    networks:
+      - progress-tracker-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/progress-tracker/frontend:latest
+    container_name: progress-tracker-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=${BACKEND_URL:-http://backend:8080}
+    depends_on:
+      - backend
+    networks:
+      - progress-tracker-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: progress-tracker-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - progress-tracker-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: progress-tracker-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - progress-tracker-network
+    restart: unless-stopped
+
+networks:
+  progress-tracker-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  redis-data:
+    driver: local

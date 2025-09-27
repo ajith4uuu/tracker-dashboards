@@ -33,16 +33,17 @@ const handleValidationErrors = (req: Request, res: Response, next: NextFunction)
       errors: errors.array(),
     });
   }
-  next();
+  return next();
 };
 
 // Send OTP endpoint
-router.post('/send-otp', 
-  validateEmail, 
-  handleValidationErrors, 
+router.post(
+  '/send-otp',
+  validateEmail,
+  handleValidationErrors,
   async (req: Request, res: Response) => {
     try {
-      const { email } = req.body;
+      const { email } = req.body as { email: string };
 
       logger.info(`Sending OTP to email: ${email}`);
 
@@ -55,27 +56,29 @@ router.post('/send-otp',
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'OTP sent successfully to your email',
         expiresIn: process.env.OTP_EXPIRES_IN || '600000',
       });
     } catch (error) {
       logger.error('Error in send-otp endpoint', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to send OTP. Please try again.',
       });
     }
-});
+  }
+);
 
 // Verify OTP endpoint
-router.post('/verify-otp',
+router.post(
+  '/verify-otp',
   validateOTP,
   handleValidationErrors,
   async (req: Request, res: Response) => {
     try {
-      const { email, otp } = req.body;
+      const { email, otp } = req.body as { email: string; otp: string };
 
       logger.info(`Verifying OTP for email: ${email}`);
 
@@ -88,13 +91,20 @@ router.post('/verify-otp',
         });
       }
 
+      if (!result.userId) {
+        return res.status(500).json({
+          success: false,
+          message: 'User ID missing after verification',
+        });
+      }
+
       // Generate JWT token
       const token = authService.generateToken({ email, userId: result.userId });
 
       // Get user profile
       const userProfile = await authService.getUserProfile(email);
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Authentication successful',
         token,
@@ -103,101 +113,94 @@ router.post('/verify-otp',
       });
     } catch (error) {
       logger.error('Error in verify-otp endpoint', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to verify OTP. Please try again.',
       });
     }
-});
+  }
+);
 
 // Refresh token endpoint
-router.post('/refresh-token',
-  authMiddleware,
-  async (req: Request, res: Response) => {
-    try {
-      const user = (req as any).user;
+router.post('/refresh-token', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user as { email: string; userId: string };
 
-      const newToken = authService.generateToken({
-        email: user.email,
-        userId: user.userId,
-      });
+    const newToken = authService.generateToken({
+      email: user.email,
+      userId: user.userId,
+    });
 
-      res.json({
-        success: true,
-        token: newToken,
-        expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-      });
-    } catch (error) {
-      logger.error('Error in refresh-token endpoint', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to refresh token',
-      });
-    }
+    return res.json({
+      success: true,
+      token: newToken,
+      expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    });
+  } catch (error) {
+    logger.error('Error in refresh-token endpoint', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to refresh token',
+    });
+  }
 });
 
 // Logout endpoint
-router.post('/logout',
-  authMiddleware,
-  async (req: Request, res: Response) => {
-    try {
-      const user = (req as any).user;
+router.post('/logout', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user as { email: string };
 
-      // Invalidate token (add to blacklist if using Redis)
-      await authService.logout(user.email);
+    // Invalidate token (add to blacklist if using Redis)
+    await authService.logout(user.email);
 
-      res.json({
-        success: true,
-        message: 'Logged out successfully',
-      });
-    } catch (error) {
-      logger.error('Error in logout endpoint', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to logout',
-      });
-    }
+    return res.json({
+      success: true,
+      message: 'Logged out successfully',
+    });
+  } catch (error) {
+    logger.error('Error in logout endpoint', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to logout',
+    });
+  }
 });
 
 // Get current user endpoint
-router.get('/me',
-  authMiddleware,
-  async (req: Request, res: Response) => {
-    try {
-      const user = (req as any).user;
-      
-      const userProfile = await authService.getUserProfile(user.email);
+router.get('/me', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user as { email: string };
 
-      res.json({
-        success: true,
-        user: userProfile,
-      });
-    } catch (error) {
-      logger.error('Error in me endpoint', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to get user profile',
-      });
-    }
+    const userProfile = await authService.getUserProfile(user.email);
+
+    return res.json({
+      success: true,
+      user: userProfile,
+    });
+  } catch (error) {
+    logger.error('Error in me endpoint', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get user profile',
+    });
+  }
 });
 
 // Validate token endpoint
-router.post('/validate',
-  authMiddleware,
-  async (req: Request, res: Response) => {
-    try {
-      res.json({
-        success: true,
-        valid: true,
-        user: (req as any).user,
-      });
-    } catch (error) {
-      logger.error('Error in validate endpoint', error);
-      res.status(500).json({
-        success: false,
-        message: 'Token validation failed',
-      });
-    }
+router.post('/validate', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    return res.json({
+      success: true,
+      valid: true,
+      user: (req as any).user,
+    });
+  } catch (error) {
+    logger.error('Error in validate endpoint', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Token validation failed',
+    });
+  }
 });
 
 export default router;

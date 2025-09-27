@@ -20,7 +20,6 @@ import dashboardRoutes from './routes/dashboard.routes';
 // Import middleware
 import { errorHandler } from './middleware/error.middleware';
 import { requestLogger } from './middleware/logger.middleware';
-import { validateApiKey } from './middleware/apikey.middleware';
 
 // Import services
 import { logger } from './utils/logger';

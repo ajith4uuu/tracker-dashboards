@@ -9,7 +9,7 @@ const router = Router();
 // Get all patients
 router.get('/',
   authMiddleware,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { page = 1, limit = 20, search, sortBy = 'lastActivity', sortOrder = 'desc' } = req.query;
       
@@ -85,7 +85,7 @@ router.get('/',
 // Get patient journey details
 router.get('/:patientId/journey',
   authMiddleware,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { patientId } = req.params;
       
@@ -117,7 +117,7 @@ router.get('/:patientId/journey',
 // Get patient timeline
 router.get('/:patientId/timeline',
   authMiddleware,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { patientId } = req.params;
       const { startDate, endDate } = req.query;
@@ -173,7 +173,7 @@ router.get('/:patientId/timeline',
 // Get patient analytics
 router.get('/:patientId/analytics',
   authMiddleware,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { patientId } = req.params;
       
@@ -249,7 +249,7 @@ router.get('/:patientId/analytics',
 // Add patient note
 router.post('/:patientId/notes',
   authMiddleware,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { patientId } = req.params;
       const { note } = req.body;
@@ -296,7 +296,7 @@ router.post('/:patientId/notes',
 // Get patient notes
 router.get('/:patientId/notes',
   authMiddleware,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { patientId } = req.params;
       
@@ -338,7 +338,7 @@ router.get('/:patientId/notes',
 // Get patient risk assessment
 router.get('/:patientId/risk',
   authMiddleware,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { patientId } = req.params;
       

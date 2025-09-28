@@ -339,7 +339,7 @@ router.get('/export',
       if (format === 'csv') {
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="${table}-export-${Date.now()}.csv"`);
-        res.send(csvData);
+        return res.send(csvData);
       } else {
         return res.json({
           success: true,

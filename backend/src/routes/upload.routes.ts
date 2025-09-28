@@ -83,7 +83,7 @@ router.post('/single',
       });
 
       // Clean up uploaded file
-      fs.unlinkSync(req.file.path);
+      fs.unlinkSync(uploadedFile.path);
 
       return res.json({
         success: true,
@@ -100,7 +100,7 @@ router.post('/single',
       
       // Clean up file on error
       if (req.file && fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
+        fs.unlinkSync(uploadedFile.path);
       }
       
       return res.status(500).json({

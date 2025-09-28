@@ -1,4 +1,4 @@
-import { BigQuery, Dataset, Table } from '@google-cloud/bigquery';
+import { BigQuery, Dataset } from '@google-cloud/bigquery';
 import { logger } from '../utils/logger';
 
 interface SurveyData {
@@ -31,9 +31,8 @@ interface PatientJourney {
 }
 
 class BigQueryService {
-  private bigquery: BigQuery;
+  public bigquery: BigQuery;
   private dataset: Dataset;
-  private initialized: boolean = false;
   private projectId: string;
   private datasetId: string;
   private location: string;
@@ -66,7 +65,6 @@ class BigQueryService {
       // Create tables if they don't exist
       await this.createTables();
 
-      this.initialized = true;
       logger.info('BigQuery initialized successfully');
     } catch (error) {
       logger.error('Failed to initialize BigQuery:', error);

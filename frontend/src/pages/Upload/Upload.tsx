@@ -24,7 +24,6 @@ import {
   CheckCircle,
   Error,
   Delete,
-  Description,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSnackbar } from 'notistack';

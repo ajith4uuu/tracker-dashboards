@@ -55,7 +55,7 @@ import {
   Groups,
   Equalizer,
   Science,
-  Scorecard,
+  Leaderboard,
   CompareArrows,
 } from '@mui/icons-material';
 import { RootState, AppDispatch } from '../../store/store';
@@ -77,7 +77,7 @@ const menuItems = [
       { text: 'Executive Overview', icon: <Speed />, path: '/dashboards/executive-overview', info: 'AHRQ+1' },
       { text: 'Response Quality', icon: <CheckCircle />, path: '/dashboards/response-quality', info: 'AHRQ' },
       { text: 'Engagement Funnel', icon: <BarChart />, path: '/dashboards/engagement-funnel', info: 'AHRQ' },
-      { text: 'CAHPS Metrics', icon: <Scorecard />, path: '/dashboards/cahps', info: 'CMS' },
+      { text: 'CAHPS Metrics', icon: <Leaderboard />, path: '/dashboards/cahps', info: 'CMS' },
       { text: 'PROMIS Domains', icon: <Psychology />, path: '/dashboards/promis', info: 'PMC' },
       { text: 'Cohort Comparisons', icon: <GroupWork />, path: '/dashboards/cohort-comparison', info: 'PMC' },
       { text: 'Longitudinal Change', icon: <Timeline />, path: '/dashboards/longitudinal', info: 'BMJ' },
@@ -99,7 +99,7 @@ const menuItems = [
       { text: 'Care Team Panel', icon: <Groups />, path: '/dashboards/care-team', info: 'BMJ' },
       { text: 'Equity Lens', icon: <Equalizer />, path: '/dashboards/equity', info: 'CMS' },
       { text: 'Interventions', icon: <Science />, path: '/dashboards/interventions', info: 'ASCO' },
-      { text: 'PROMIS Scorecard', icon: <Scorecard />, path: '/dashboards/promis-scorecard', info: 'Advances' },
+      { text: 'PROMIS Scorecard', icon: <Leaderboard />, path: '/dashboards/promis-scorecard', info: 'Advances' },
       { text: 'Experience + Outcomes', icon: <CompareArrows />, path: '/dashboards/experience-outcomes', info: 'AHRQ' },
     ],
   },

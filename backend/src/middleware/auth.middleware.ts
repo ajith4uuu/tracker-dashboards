@@ -15,16 +15,17 @@ export const authMiddleware = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     // Get token from header
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'No token provided',
       });
+      return;
     }
 
     const token = authHeader.substring(7);
@@ -33,18 +34,20 @@ export const authMiddleware = async (
     const decoded = authService.verifyToken(token);
 
     if (!decoded) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Invalid token',
       });
+      return;
     }
 
     // Check if token is expired
     if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Token expired',
       });
+      return;
     }
 
     // Attach user to request
@@ -55,21 +58,21 @@ export const authMiddleware = async (
       exp: decoded.exp,
     };
 
-    next();
+    return next();
   } catch (error) {
     logger.error('Auth middleware error:', error);
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
       message: 'Authentication failed',
-    });
+    }) as any;
   }
 };
 
 export const optionalAuthMiddleware = async (
   req: AuthenticatedRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     
@@ -87,9 +90,9 @@ export const optionalAuthMiddleware = async (
       }
     }
     
-    next();
+    return next();
   } catch (error) {
     // Continue without authentication
-    next();
+    return next();
   }
 };

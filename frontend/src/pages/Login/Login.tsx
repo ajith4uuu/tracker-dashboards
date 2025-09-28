@@ -12,15 +12,12 @@ import {
   Alert,
   CircularProgress,
   InputAdornment,
-  IconButton,
   Fade,
   Paper,
 } from '@mui/material';
 import {
   Email as EmailIcon,
   LockOpen as LockOpenIcon,
-  Visibility,
-  VisibilityOff,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useFormik } from 'formik';

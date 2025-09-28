@@ -24,14 +24,10 @@ import {
   FormControl,
   InputLabel,
 } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import {
   Save,
-  Edit,
   Delete,
-  Security,
-  Notifications,
-  Palette,
-  Language,
   CloudUpload,
   Email,
   Key,

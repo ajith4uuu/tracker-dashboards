@@ -41,10 +41,6 @@ import {
   BarChart as BarChartIcon,
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   XAxis,
@@ -60,6 +56,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
+  Cell,
 } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardAPI } from '../../services/api/dashboardAPI';
@@ -83,7 +80,9 @@ const SEVERITY_COLORS = {
   mild: '#FFC107',
   moderate: '#FF9800',
   severe: '#F44336',
-};
+} as const;
+
+type SeverityKey = keyof typeof SEVERITY_COLORS;
 
 const PROMISDomains: React.FC = () => {
   const [timeRange, setTimeRange] = useState('30d');
@@ -117,7 +116,7 @@ const PROMISDomains: React.FC = () => {
   }
 
   // Get severity band for T-score
-  const getSeverityBand = (tScore: number): string => {
+  const getSeverityBand = (tScore: number): SeverityKey => {
     if (tScore < 55) return 'normal';
     if (tScore < 60) return 'mild';
     if (tScore < 70) return 'moderate';
@@ -333,7 +332,7 @@ const PROMISDomains: React.FC = () => {
               <RadarChart data={radarData}>
                 <PolarGrid stroke="#e0e0e0" />
                 <PolarAngleAxis dataKey="domain" />
-                <PolarRadiusAxis angle={90} domain={[30, 80]} ticks={[30, 40, 50, 60, 70, 80]} />
+                <PolarRadiusAxis angle={90} domain={[30, 80]} ticks={[30, 40, 50, 60, 70, 80] as any} />
                 <Radar
                   name="Patient T-Score"
                   dataKey="tScore"
@@ -377,7 +376,7 @@ const PROMISDomains: React.FC = () => {
                 
                 <Bar dataKey="tScore" fill="#FF69B4">
                   {data.domains.map((entry, index) => (
-                    <Bar key={`cell-${index}`} fill={SEVERITY_COLORS[entry.severity]} />
+                    <Cell key={`cell-${index}`} fill={SEVERITY_COLORS[entry.severity as SeverityKey]} />
                   ))}
                 </Bar>
               </BarChart>
@@ -414,7 +413,7 @@ const PROMISDomains: React.FC = () => {
                           size="small"
                           sx={{
                             backgroundColor: `${SEVERITY_COLORS[getSeverityBand(mcid.current)]}20`,
-                            color: SEVERITY_COLORS[getSeverityBand(mcid.current)],
+                            color: SEVERITY_COLORS[getSeverityBand(mcid.current)] as string,
                           }}
                         />
                       </TableCell>

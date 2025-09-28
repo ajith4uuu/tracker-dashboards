@@ -3,6 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box } from '@mui/material';
 import { AnimatePresence } from 'framer-motion';
+import { RootState } from './store/store';
+import { checkAuth } from './store/slices/authSlice';
+import LoadingScreen from './components/LoadingScreen/LoadingScreen';
 
 // Layout
 import Layout from './components/Layout/Layout';
@@ -41,12 +44,6 @@ const InterventionOutcomes = lazy(() => import('./pages/Dashboards/InterventionO
 const PROMISScorecard = lazy(() => import('./pages/Dashboards/PROMISScorecard'));
 const ExperienceOutcomes = lazy(() => import('./pages/Dashboards/ExperienceOutcomes'));
 
-// Store
-import { RootState } from './store/store';
-import { checkAuth } from './store/slices/authSlice';
-
-// Components
-import LoadingScreen from './components/LoadingScreen/LoadingScreen';
 
 function App() {
   const dispatch = useDispatch();

@@ -7,7 +7,7 @@ import { logger } from '../utils/logger';
 const router = Router();
 
 // Basic health check
-router.get('/health', (req: Request, res: Response) => {
+router.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -17,12 +17,12 @@ router.get('/health', (req: Request, res: Response) => {
 });
 
 // Liveness probe
-router.get('/liveness', (req: Request, res: Response) => {
+router.get('/liveness', (_req: Request, res: Response) => {
   res.status(200).send('OK');
 });
 
 // Readiness probe
-router.get('/readiness', async (req: Request, res: Response) => {
+router.get('/readiness', async (_req: Request, res: Response) => {
   try {
     const checks = {
       server: true,
@@ -33,8 +33,8 @@ router.get('/readiness', async (req: Request, res: Response) => {
 
     // Check BigQuery
     try {
-      const [datasets] = await bigqueryService.bigquery.getDatasets({ maxResults: 1 });
-      checks.bigquery = datasets.length >= 0;
+      await bigqueryService.bigquery.getDatasets({ maxResults: 1 });
+      checks.bigquery = true;
     } catch (error) {
       logger.warn('BigQuery health check failed:', error);
     }
@@ -69,7 +69,7 @@ router.get('/readiness', async (req: Request, res: Response) => {
 });
 
 // Detailed health status
-router.get('/status', async (req: Request, res: Response) => {
+router.get('/status', async (_req: Request, res: Response) => {
   try {
     const status = {
       application: {
@@ -101,7 +101,7 @@ router.get('/status', async (req: Request, res: Response) => {
 
     // Test BigQuery connection
     try {
-      const [datasets] = await bigqueryService.bigquery.getDatasets({ maxResults: 1 });
+      await bigqueryService.bigquery.getDatasets({ maxResults: 1 });
       status.services.bigquery.status = 'connected';
     } catch (error) {
       status.services.bigquery.status = 'disconnected';
@@ -118,7 +118,7 @@ router.get('/status', async (req: Request, res: Response) => {
 });
 
 // Metrics endpoint (Prometheus format)
-router.get('/metrics', async (req: Request, res: Response) => {
+router.get('/metrics', async (_req: Request, res: Response) => {
   try {
     const metrics = [];
 

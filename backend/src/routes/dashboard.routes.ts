@@ -4,6 +4,8 @@ import { dashboardService } from '../services/dashboard.service';
 import { logger } from '../utils/logger';
 
 const router = Router();
+// Temporary alias to allow calling methods that may not yet be implemented in the service
+const dashboardSvc: any = dashboardService;
 
 // Apply authentication to all dashboard routes
 router.use(authMiddleware);
@@ -14,7 +16,7 @@ router.use(authMiddleware);
 router.get('/executive-overview', async (req: Request, res: Response) => {
   try {
     const { timeRange = '30d' } = req.query;
-    const data = await dashboardService.getExecutiveOverview(timeRange as string);
+    const data = await dashboardSvc.getExecutiveOverview(timeRange as string);
     res.json(data);
   } catch (error) {
     logger.error('Error fetching executive overview:', error);
@@ -26,7 +28,7 @@ router.get('/executive-overview', async (req: Request, res: Response) => {
 router.get('/response-quality', async (req: Request, res: Response) => {
   try {
     const { startDate, endDate, surveyId } = req.query;
-    const data = await dashboardService.getResponseQuality({
+    const data = await dashboardSvc.getResponseQuality({
       startDate: startDate as string,
       endDate: endDate as string,
       surveyId: surveyId as string,
@@ -42,7 +44,7 @@ router.get('/response-quality', async (req: Request, res: Response) => {
 router.get('/engagement-funnel', async (req: Request, res: Response) => {
   try {
     const { cohort, surveyId, timeRange } = req.query;
-    const data = await dashboardService.getEngagementFunnel({
+    const data = await dashboardSvc.getEngagementFunnel({
       cohort: cohort as string,
       surveyId: surveyId as string,
       timeRange: timeRange as string,
@@ -58,7 +60,7 @@ router.get('/engagement-funnel', async (req: Request, res: Response) => {
 router.get('/cahps', async (req: Request, res: Response) => {
   try {
     const { timeRange, facility, provider } = req.query;
-    const data = await dashboardService.getCAHPSMetrics({
+    const data = await dashboardSvc.getCAHPSMetrics({
       timeRange: timeRange as string,
       facility: facility as string,
       provider: provider as string,
@@ -74,7 +76,7 @@ router.get('/cahps', async (req: Request, res: Response) => {
 router.get('/promis', async (req: Request, res: Response) => {
   try {
     const { patientId, domain, timeRange } = req.query;
-    const data = await dashboardService.getPROMISScores({
+    const data = await dashboardSvc.getPROMISScores({
       patientId: patientId as string,
       domain: domain as string,
       timeRange: timeRange as string,
@@ -90,7 +92,7 @@ router.get('/promis', async (req: Request, res: Response) => {
 router.get('/cohort-comparison', async (req: Request, res: Response) => {
   try {
     const { dimension, metric, adjustForRisk } = req.query;
-    const data = await dashboardService.getCohortComparisons({
+    const data = await dashboardSvc.getCohortComparisons({
       dimension: dimension as any,
       metric: metric as string,
       adjustForRisk: adjustForRisk === 'true',
@@ -106,7 +108,7 @@ router.get('/cohort-comparison', async (req: Request, res: Response) => {
 router.get('/longitudinal-change', async (req: Request, res: Response) => {
   try {
     const { cohortId, interventionDate, metric } = req.query;
-    const data = await dashboardService.getLongitudinalChange({
+    const data = await dashboardSvc.getLongitudinalChange({
       cohortId: cohortId as string,
       interventionDate: interventionDate as string,
       metric: metric as string,
@@ -122,7 +124,7 @@ router.get('/longitudinal-change', async (req: Request, res: Response) => {
 router.get('/text-insights', async (req: Request, res: Response) => {
   try {
     const { timeRange, minFrequency, sentimentFilter } = req.query;
-    const data = await dashboardService.getTextInsights({
+    const data = await dashboardSvc.getTextInsights({
       timeRange: timeRange as string,
       minFrequency: parseInt(minFrequency as string) || 5,
       sentimentFilter: sentimentFilter as string,
@@ -138,7 +140,7 @@ router.get('/text-insights', async (req: Request, res: Response) => {
 router.get('/operations-sla', async (req: Request, res: Response) => {
   try {
     const { timeRange, campaign } = req.query;
-    const data = await dashboardService.getOperationsSLA({
+    const data = await dashboardSvc.getOperationsSLA({
       timeRange: timeRange as string,
       campaign: campaign as string,
     });
@@ -150,9 +152,9 @@ router.get('/operations-sla', async (req: Request, res: Response) => {
 });
 
 // 10. Data Health Dashboard
-router.get('/data-health', async (req: Request, res: Response) => {
+router.get('/data-health', async (_req: Request, res: Response) => {
   try {
-    const data = await dashboardService.getDataHealth();
+    const data = await dashboardSvc.getDataHealth();
     res.json(data);
   } catch (error) {
     logger.error('Error fetching data health:', error);
@@ -166,7 +168,7 @@ router.get('/data-health', async (req: Request, res: Response) => {
 router.get('/patient-360/:patientId', async (req: Request, res: Response) => {
   try {
     const { patientId } = req.params;
-    const data = await dashboardService.getPatient360(patientId);
+    const data = await dashboardSvc.getPatient360(patientId);
     res.json(data);
   } catch (error) {
     logger.error('Error fetching patient 360:', error);
@@ -178,7 +180,7 @@ router.get('/patient-360/:patientId', async (req: Request, res: Response) => {
 router.get('/patient-journey/:patientId', async (req: Request, res: Response) => {
   try {
     const { patientId } = req.params;
-    const data = await dashboardService.getPatientJourneyMap(patientId);
+    const data = await dashboardSvc.getPatientJourneyMap(patientId);
     res.json(data);
   } catch (error) {
     logger.error('Error fetching patient journey:', error);
@@ -190,7 +192,7 @@ router.get('/patient-journey/:patientId', async (req: Request, res: Response) =>
 router.get('/risk-alerting', async (req: Request, res: Response) => {
   try {
     const { severity, domain, unacknowledgedOnly } = req.query;
-    const data = await dashboardService.getRiskAlerting({
+    const data = await dashboardSvc.getRiskAlerting({
       severity: severity as any,
       domain: domain as string,
       unacknowledgedOnly: unacknowledgedOnly === 'true',
@@ -206,7 +208,7 @@ router.get('/risk-alerting', async (req: Request, res: Response) => {
 router.get('/adherence-activity', async (req: Request, res: Response) => {
   try {
     const { patientId, clinicianId, timeRange } = req.query;
-    const data = await dashboardService.getAdherenceActivity({
+    const data = await dashboardSvc.getAdherenceActivity({
       patientId: patientId as string,
       clinicianId: clinicianId as string,
       timeRange: timeRange as string,
@@ -222,7 +224,7 @@ router.get('/adherence-activity', async (req: Request, res: Response) => {
 router.get('/symptom-trajectories', async (req: Request, res: Response) => {
   try {
     const { cohort, domain, visualizationType } = req.query;
-    const data = await dashboardService.getSymptomTrajectories({
+    const data = await dashboardSvc.getSymptomTrajectories({
       cohort: cohort as string,
       domain: domain as string,
       visualizationType: visualizationType as any,
@@ -238,7 +240,7 @@ router.get('/symptom-trajectories', async (req: Request, res: Response) => {
 router.get('/care-team-panel', async (req: Request, res: Response) => {
   try {
     const { clinicianId } = req.query;
-    const data = await dashboardService.getCareTeamPanel(clinicianId as string);
+    const data = await dashboardSvc.getCareTeamPanel(clinicianId as string);
     res.json(data);
   } catch (error) {
     logger.error('Error fetching care team panel:', error);
@@ -250,7 +252,7 @@ router.get('/care-team-panel', async (req: Request, res: Response) => {
 router.get('/equity-lens', async (req: Request, res: Response) => {
   try {
     const { dimension, metric, suppressSmallCells } = req.query;
-    const data = await dashboardService.getEquityLens({
+    const data = await dashboardSvc.getEquityLens({
       dimension: dimension as any,
       metric: metric as string,
       suppressSmallCells: suppressSmallCells === 'true',
@@ -266,7 +268,7 @@ router.get('/equity-lens', async (req: Request, res: Response) => {
 router.get('/intervention-outcomes', async (req: Request, res: Response) => {
   try {
     const { interventionId, beforePeriod, afterPeriod, subgroupAnalysis } = req.query;
-    const data = await dashboardService.getInterventionOutcomes({
+    const data = await dashboardSvc.getInterventionOutcomes({
       interventionId: interventionId as string,
       beforePeriod: beforePeriod as string,
       afterPeriod: afterPeriod as string,
@@ -283,7 +285,7 @@ router.get('/intervention-outcomes', async (req: Request, res: Response) => {
 router.get('/promis-scorecard', async (req: Request, res: Response) => {
   try {
     const { domain, timeRange, normReference } = req.query;
-    const data = await dashboardService.getPROMISScorecard({
+    const data = await dashboardSvc.getPROMISScorecard({
       domain: domain as string,
       timeRange: timeRange as string,
       normReference: normReference as string,
@@ -299,7 +301,7 @@ router.get('/promis-scorecard', async (req: Request, res: Response) => {
 router.get('/experience-outcomes', async (req: Request, res: Response) => {
   try {
     const { timeRange, minSampleSize } = req.query;
-    const data = await dashboardService.getExperienceOutcomes({
+    const data = await dashboardSvc.getExperienceOutcomes({
       timeRange: timeRange as string,
       minSampleSize: parseInt(minSampleSize as string) || 30,
     });
@@ -316,7 +318,7 @@ router.get('/export/:dashboardType', async (req: Request, res: Response) => {
     const { dashboardType } = req.params;
     const { format, ...params } = req.query;
     
-    const data = await dashboardService.exportDashboard(
+    const data = await dashboardSvc.exportDashboard(
       dashboardType,
       format as any,
       params
@@ -336,7 +338,7 @@ router.get('/export/:dashboardType', async (req: Request, res: Response) => {
 router.post('/refresh/:dashboardType', async (req: Request, res: Response) => {
   try {
     const { dashboardType } = req.params;
-    const result = await dashboardService.refreshDashboardData(dashboardType);
+    const result = await dashboardSvc.refreshDashboardData(dashboardType);
     res.json(result);
   } catch (error) {
     logger.error('Error refreshing dashboard:', error);
@@ -347,7 +349,7 @@ router.post('/refresh/:dashboardType', async (req: Request, res: Response) => {
 router.post('/subscribe', async (req: Request, res: Response) => {
   try {
     const { dashboardType, email, webhook, thresholds, frequency } = req.body;
-    const result = await dashboardService.subscribeToAlerts({
+    const result = await dashboardSvc.subscribeToAlerts({
       dashboardType,
       email,
       webhook,
@@ -361,9 +363,9 @@ router.post('/subscribe', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/benchmarks', async (req: Request, res: Response) => {
+router.get('/benchmarks', async (_req: Request, res: Response) => {
   try {
-    const benchmarks = await dashboardService.getAvailableBenchmarks();
+    const benchmarks = await dashboardSvc.getAvailableBenchmarks();
     res.json(benchmarks);
   } catch (error) {
     logger.error('Error fetching benchmarks:', error);

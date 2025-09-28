@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -11,7 +11,6 @@ import {
   Chip,
   Avatar,
   Button,
-  TablePagination,
   CircularProgress,
   Alert,
 } from '@mui/material';
@@ -34,17 +33,16 @@ const Patients: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [searchQuery, setSearchQuery] = useState('');
   const [sortModel, setSortModel] = useState<any>([]);
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['patients', page, pageSize, searchQuery, sortModel],
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['patients', paginationModel.page, paginationModel.pageSize, searchQuery, sortModel],
     queryFn: async () => {
       const response = await patientsAPI.getPatients({
-        page: page + 1,
-        limit: pageSize,
+        page: paginationModel.page + 1,
+        limit: paginationModel.pageSize,
         search: searchQuery,
         sortBy: sortModel[0]?.field,
         sortOrder: sortModel[0]?.sort,
@@ -221,15 +219,13 @@ const Patients: React.FC = () => {
               rows={data?.patients || []}
               columns={columns}
               getRowId={(row) => row.patientId}
-              pageSize={pageSize}
-              rowsPerPageOptions={[10, 25, 50]}
-              onPageSizeChange={setPageSize}
-              page={page}
-              onPageChange={setPage}
-              sortModel={sortModel}
-              onSortModelChange={setSortModel}
-              autoHeight
-              disableSelectionOnClick
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            pageSizeOptions={[10, 25, 50]}
+            sortModel={sortModel}
+            onSortModelChange={setSortModel}
+            autoHeight
+            disableRowSelectionOnClick
               sx={{
                 '& .MuiDataGrid-row:hover': {
                   cursor: 'pointer',

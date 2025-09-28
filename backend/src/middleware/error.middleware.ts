@@ -11,7 +11,7 @@ export const errorHandler = (
   err: ErrorWithStatus,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   // Log error
   logger.error('Error handler:', {
@@ -62,8 +62,8 @@ export const errorHandler = (
 };
 
 export const notFoundHandler = (
-  req: Request,
-  res: Response,
+  _req: Request,
+  _res: Response,
   next: NextFunction
 ) => {
   const error: ErrorWithStatus = new Error('Resource not found');

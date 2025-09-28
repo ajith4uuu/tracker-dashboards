@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import * as XLSX from 'xlsx';
 import { authMiddleware } from '../middleware/auth.middleware';
-import { bigqueryService } from '../services/bigquery.service';
+import { bigqueryService, bigquery } from '../services/bigquery.service';
 import { geminiService } from '../services/gemini.service';
 import { logger } from '../utils/logger';
 
@@ -12,14 +12,14 @@ const router = Router();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     const uploadDir = 'uploads';
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     cb(null, uploadDir);
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
@@ -30,7 +30,7 @@ const upload = multer({
   limits: {
     fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     const allowedTypes = process.env.ALLOWED_FILE_TYPES?.split(',') || ['.csv', '.xlsx', '.xls'];
     const ext = path.extname(file.originalname).toLowerCase();
     
@@ -56,10 +56,11 @@ router.post('/single',
       }
 
       const user = (req as any).user;
-      logger.info(`File uploaded by ${user.email}:`, req.file.filename);
+      const uploadedFile = req.file as Express.Multer.File;
+      logger.info(`File uploaded by ${user.email}:`, uploadedFile.filename);
 
       // Process the file
-      const data = await processFile(req.file.path, req.file.mimetype);
+      const data = await processFile(uploadedFile.path, uploadedFile.mimetype);
 
       // Store in BigQuery
       const surveyData = data.map((row: any) => ({
@@ -69,7 +70,7 @@ router.post('/single',
         responses: row,
         metadata: {
           uploadedBy: user.email,
-          fileName: req.file.originalname,
+          fileName: uploadedFile.originalname,
           uploadDate: new Date(),
         },
       }));
@@ -83,13 +84,13 @@ router.post('/single',
       });
 
       // Clean up uploaded file
-      fs.unlinkSync(req.file.path);
+      fs.unlinkSync(uploadedFile.path);
 
-      res.json({
+      return res.json({
         success: true,
         message: 'File uploaded and processed successfully',
         data: {
-          fileName: req.file.originalname,
+          fileName: uploadedFile.originalname,
           recordsProcessed: data.length,
           insights: insights.insights,
           recommendations: insights.recommendations,
@@ -99,11 +100,13 @@ router.post('/single',
       logger.error('Error processing upload:', error);
       
       // Clean up file on error
-      if (req.file && fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
+      // Attempt to remove uploaded file if present
+      const f = (req.file as Express.Multer.File | undefined);
+      if (f && fs.existsSync(f.path)) {
+        fs.unlinkSync(f.path);
       }
       
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to process uploaded file',
       });
@@ -177,7 +180,7 @@ router.post('/multiple',
         context: 'Batch file upload results',
       });
 
-      res.json({
+      return res.json({
         success: true,
         message: `Processed ${files.length} files`,
         results,
@@ -185,7 +188,7 @@ router.post('/multiple',
       });
     } catch (error) {
       logger.error('Error in multiple file upload:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to process uploaded files',
       });
@@ -212,21 +215,18 @@ router.get('/history',
         LIMIT 100
       `;
 
-      const bigquery = new BigQuery({
-        projectId: process.env.GCP_PROJECT_ID,
-      });
       const [rows] = await bigquery.query({
         query,
         params: { uploadedBy: user.email },
       });
 
-      res.json({
+      return res.json({
         success: true,
         uploads: rows,
       });
     } catch (error) {
       logger.error('Error fetching upload history:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to fetch upload history',
       });
@@ -234,7 +234,7 @@ router.get('/history',
 });
 
 // Process file based on type
-async function processFile(filePath: string, mimeType: string): Promise<any[]> {
+async function processFile(filePath: string, _mimeType: string): Promise<any[]> {
   const ext = path.extname(filePath).toLowerCase();
 
   if (ext === '.csv') {

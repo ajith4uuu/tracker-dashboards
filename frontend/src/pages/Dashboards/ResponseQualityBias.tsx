@@ -52,7 +52,6 @@ import {
   ScatterChart,
   Scatter,
   ZAxis,
-  Histogram,
 } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -170,7 +169,7 @@ const ResponseQualityBias: React.FC = () => {
                 label={qualityStatus.label}
                 color={qualityStatus.color as any}
                 variant="outlined"
-                size="large"
+                size="medium"
               />
             </Box>
           </Box>

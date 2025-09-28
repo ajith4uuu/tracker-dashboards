@@ -20,9 +20,9 @@ const validateOTP = [
     .normalizeEmail()
     .withMessage('Please provide a valid email address'),
   body('otp')
-    .isLength({ min: 6, max: 6 })
-    .isNumeric()
-    .withMessage('OTP must be a 6-digit number'),
+    .isLength({ min: 5, max: 5 })
+    .isAlphanumeric()
+    .withMessage('OTP must be a 5-character alphanumeric code'),
 ];
 
 const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {

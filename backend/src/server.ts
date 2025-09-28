@@ -58,12 +58,15 @@ class Server {
     // CORS configuration
     const corsOptions: cors.CorsOptions = {
       origin: (origin, callback) => {
+        const isDev = process.env.NODE_ENV !== 'production';
         const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
+        if (isDev) {
+          return callback(null, true);
         }
+        if (!origin || allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'));
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

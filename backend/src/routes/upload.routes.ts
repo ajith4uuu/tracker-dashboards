@@ -69,7 +69,7 @@ router.post('/single',
         responses: row,
         metadata: {
           uploadedBy: user.email,
-          fileName: req.file.originalname,
+          fileName: uploadedFile.originalname,
           uploadDate: new Date(),
         },
       }));
@@ -89,7 +89,7 @@ router.post('/single',
         success: true,
         message: 'File uploaded and processed successfully',
         data: {
-          fileName: req.file.originalname,
+          fileName: uploadedFile.originalname,
           recordsProcessed: data.length,
           insights: insights.insights,
           recommendations: insights.recommendations,

@@ -586,7 +586,7 @@ class DashboardService {
       activeAlerts: [],
       mcidViolations: [],
       outreachWindows: [],
-    } as RiskAlertingDashboard;
+    };
   }
 
   // 14. Adherence & Activity Dashboard

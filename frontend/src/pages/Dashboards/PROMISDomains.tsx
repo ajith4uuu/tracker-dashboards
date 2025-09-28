@@ -41,10 +41,6 @@ import {
   BarChart as BarChartIcon,
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   XAxis,
@@ -60,6 +56,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
+  Cell,
 } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardAPI } from '../../services/api/dashboardAPI';

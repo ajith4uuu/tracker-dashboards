@@ -533,6 +533,148 @@ class DashboardService {
     }
   }
 
+  // 4. CAHPS Dashboard
+  async getCAHPSMetrics(_params: any): Promise<CAHPSDashboard> {
+    return {
+      domains: {
+        provider: { topBoxPercent: 0, score: 0, items: [] },
+        access: { topBoxPercent: 0, score: 0, items: [] },
+        communication: { topBoxPercent: 0, score: 0, items: [] },
+      },
+      globalRatings: { overallRating: 0, recommendRating: 0 },
+      npsView: { score: 0, promoters: 0, passives: 0, detractors: 0 },
+      cmsBenchmark: { percentile: 0, starRating: 0 },
+    };
+  }
+
+  // 5. PROMIS Domain Scores Dashboard
+  async getPROMISScores(_params: any): Promise<PROMISDashboard> {
+    return {
+      domains: [],
+      clinicallyMeaningfulChange: { improved: [], worsened: [], stable: [] },
+      mcidBands: {},
+      itemResponseTheory: { theta: 0, information: [] },
+    };
+  }
+
+  // 6. Cohort Comparisons Dashboard
+  async getCohortComparisons(_params: any): Promise<CohortComparisonDashboard> {
+    return {
+      comparisons: [],
+      statisticalTests: { pValue: 1, effectSize: 0, interpretation: 'no difference' },
+      adjustmentFactors: [],
+    };
+  }
+
+  // 7. Longitudinal Change Dashboard
+  async getLongitudinalChange(_params: any): Promise<LongitudinalChangeDashboard> {
+    return {
+      trajectories: { preIntervention: [], postIntervention: [], changeScore: 0, pValue: 1 },
+      followUpPoints: [],
+      spcAnalysis: { controlLimits: { upper: 0, center: 0, lower: 0 }, violations: [] },
+    };
+  }
+
+  // 8. Text Insights Dashboard
+  async getTextInsights(_params: any): Promise<TextInsightsDashboard> {
+    return {
+      themes: [],
+      sentimentByTheme: {},
+      exampleVerbatims: [],
+    };
+  }
+
+  // 9. Operations & SLA Dashboard
+  async getOperationsSLA(_params: any): Promise<OperationsSLADashboard> {
+    return {
+      invitationThroughput: { sent: 0, delivered: 0, opened: 0, ratePerHour: 0 },
+      bounceMetrics: { bounceRate: 0, undeliverableRate: 0, invalidEmails: [] },
+      reminderEfficacy: { remindersent: 0, responseRate: 0, optimalTiming: '' },
+      costMetrics: { costPerInvite: 0, costPerComplete: 0, totalCost: 0, roi: 0 },
+    };
+  }
+
+  // 10. Data Health Dashboard
+  async getDataHealth(): Promise<DataHealthDashboard> {
+    return {
+      dataQuality: { completeness: 0, accuracy: 0, consistency: 0, timeliness: 0 },
+      anomalies: { lateSubmissions: 0, duplicates: 0, schemaDrift: [] },
+      refreshStatus: { lastRefresh: new Date(), nextScheduled: new Date(), status: 'success' },
+      bigQueryUsage: { slotHours: 0, bytesProcessed: 0, costUSD: 0, queryCount: 0 },
+    };
+  }
+
+  // 13. Risk & Alerting Dashboard
+  async getRiskAlerting(_params: any) {
+    return {
+      activeAlerts: [],
+      mcidViolations: [],
+      outreachWindows: [],
+    } as RiskAlertingDashboard;
+  }
+
+  // 14. Adherence & Activity Dashboard
+  async getAdherenceActivity(_params: any): Promise<AdherenceActivityDashboard> {
+    return {
+      completionCadence: { onTime: 0, late: 0, missed: 0 },
+      missedWindows: [],
+      reminderOutcomes: { sent: 0, opened: 0, completed: 0, effectiveness: 0 },
+    };
+  }
+
+  // 15. Symptom Trajectories Dashboard
+  async getSymptomTrajectories(_params: any): Promise<SymptomTrajectoriesDashboard> {
+    return {
+      trajectoryPlots: { type: 'spaghetti', data: [] },
+      responderAnalysis: { responders: [], nonResponders: [], undetermined: [], criteria: '' },
+      patterns: [],
+    };
+  }
+
+  // 16. Care Team Panel Dashboard
+  async getCareTeamPanel(_clinicianId: string): Promise<CareTeamPanelDashboard> {
+    return {
+      workload: {},
+      highRiskQueue: [],
+      sdmQueue: [],
+    };
+  }
+
+  // 17. Equity Lens Dashboard
+  async getEquityLens(_params: any): Promise<EquityLensDashboard> {
+    return {
+      disparities: [],
+      smallCellSuppression: true,
+      recommendations: [],
+    };
+  }
+
+  // 18. Intervention Outcomes Dashboard
+  async getInterventionOutcomes(_params: any): Promise<InterventionOutcomesDashboard> {
+    return {
+      cohorts: { before: { n: 0, mean: 0, sd: 0 }, after: { n: 0, mean: 0, sd: 0 } },
+      effectSize: { cohensD: 0, ci95: [0, 0], interpretation: 'none' },
+      subgroupAnalysis: [],
+    };
+  }
+
+  // 19. PROMIS Scorecard Dashboard
+  async getPROMISScorecard(_params: any): Promise<PROMISScorecardDashboard> {
+    return {
+      tScoreDistribution: { histogram: [], mean: 0, median: 0, sd: 0 },
+      normComparison: { aboveNorm: 0, atNorm: 0, belowNorm: 0 },
+      itemAnalysis: [],
+    };
+  }
+
+  // 20. Experience + Outcomes Dashboard
+  async getExperienceOutcomes(_params: any): Promise<ExperienceOutcomesDashboard> {
+    return {
+      correlations: [],
+      improvementLevers: [],
+    };
+  }
+
   // Helper methods
   private parseTimeRange(timeRange: string): number {
     const match = timeRange.match(/(\d+)([dmy])/);

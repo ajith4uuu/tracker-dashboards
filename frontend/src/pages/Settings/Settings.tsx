@@ -27,12 +27,7 @@ import {
 } from '@mui/material';
 import {
   Save,
-  Edit,
   Delete,
-  Security,
-  Notifications,
-  Palette,
-  Language,
   CloudUpload,
   Email,
   Key,

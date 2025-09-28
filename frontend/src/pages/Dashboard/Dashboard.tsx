@@ -288,8 +288,8 @@ const Dashboard: React.FC = () => {
           <StatCard
             title="Avg Completion"
             value={`${Math.round(
-              data?.completionRates?.reduce((acc, curr) => acc + curr.completionRate, 0) /
-                (data?.completionRates?.length || 1)
+              ((data?.completionRates?.reduce((acc, curr) => acc + (curr?.completionRate ?? 0), 0)) ?? 0) /
+              ((data?.completionRates?.length ?? 0) || 1)
             )}%`}
             icon={<Assessment />}
             color={theme.palette.success.main}

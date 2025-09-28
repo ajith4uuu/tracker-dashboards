@@ -30,7 +30,7 @@ router.get('/dashboard',
         type: 'summary',
       });
 
-      res.json({
+      return res.json({
         success: true,
         timeRange,
         data: {
@@ -48,7 +48,7 @@ router.get('/dashboard',
       });
     } catch (error) {
       logger.error('Error fetching dashboard analytics:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to fetch analytics data',
       });
@@ -60,7 +60,7 @@ router.get('/trends',
   authMiddleware,
   async (req: Request, res: Response) => {
     try {
-      const { startDate, endDate, metric } = req.query;
+      const { startDate, endDate } = req.query;
       
       let start = startDate ? new Date(startDate as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       let end = endDate ? new Date(endDate as string) : new Date();
@@ -89,7 +89,7 @@ router.get('/trends',
       // Generate trend insights with Gemini
       const insights = await geminiService.identifyTrends(rows);
 
-      res.json({
+      return res.json({
         success: true,
         period: {
           start: start.toISOString(),
@@ -104,7 +104,7 @@ router.get('/trends',
       });
     } catch (error) {
       logger.error('Error fetching trends:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to fetch trends data',
       });
@@ -161,7 +161,7 @@ router.get('/compare',
         'Time period comparison'
       );
 
-      res.json({
+      return res.json({
         success: true,
         comparison: {
           period1: {
@@ -182,7 +182,7 @@ router.get('/compare',
       });
     } catch (error) {
       logger.error('Error in comparative analysis:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to generate comparative analysis',
       });
@@ -242,7 +242,7 @@ router.get('/funnel',
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         funnel: funnelData,
         conversions,
@@ -250,7 +250,7 @@ router.get('/funnel',
       });
     } catch (error) {
       logger.error('Error in funnel analysis:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to generate funnel analysis',
       });
@@ -300,7 +300,7 @@ router.get('/cohorts',
 
       const [rows] = await bigqueryService.bigquery.query(query);
 
-      res.json({
+      return res.json({
         success: true,
         cohortBy: cohortField,
         metric: analysisMetric,
@@ -308,7 +308,7 @@ router.get('/cohorts',
       });
     } catch (error) {
       logger.error('Error in cohort analysis:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to generate cohort analysis',
       });
@@ -341,14 +341,14 @@ router.get('/export',
         res.setHeader('Content-Disposition', `attachment; filename="${table}-export-${Date.now()}.csv"`);
         res.send(csvData);
       } else {
-        res.json({
+        return res.json({
           success: true,
           data: csvData,
         });
       }
     } catch (error) {
       logger.error('Error exporting data:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to export data',
       });

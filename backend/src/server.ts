@@ -108,6 +108,16 @@ class Server {
     this.app.use('/api/patients', patientsRoutes);
     this.app.use('/api/dashboards', dashboardRoutes);
 
+    // Serve frontend build if available
+    const buildPath = path.resolve(__dirname, '../../frontend/build');
+    if (fs.existsSync(buildPath)) {
+      this.app.use(express.static(buildPath));
+      this.app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api/')) return next();
+        res.sendFile(path.join(buildPath, 'index.html'));
+      });
+    }
+
     // 404 handler
     this.app.use('*', (req, res) => {
       res.status(404).json({

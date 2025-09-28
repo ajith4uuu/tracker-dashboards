@@ -25,10 +25,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import {
-  DatePicker,
-  DateRangePicker,
-} from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers';
 import {
   Download,
   TrendingUp,

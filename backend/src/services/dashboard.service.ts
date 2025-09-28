@@ -133,7 +133,7 @@ class DashboardService {
   }
 
   // 2. Response Quality Dashboard
-  async getResponseQuality(params: any): Promise<any> {
+  async getResponseQuality(_params: any): Promise<any> {
     try {
       // Get item non-response rates
       const nonResponseQuery = `
@@ -261,7 +261,7 @@ class DashboardService {
   }
 
   // 3. Engagement Funnel Dashboard
-  async getEngagementFunnel(params: any): Promise<any> {
+  async getEngagementFunnel(_params: any): Promise<any> {
     try {
       const funnelQuery = `
         SELECT 
@@ -698,7 +698,7 @@ class DashboardService {
   }
 
   // Export functionality
-  async exportDashboard(dashboardType: string, format: 'pdf' | 'excel' | 'csv', params: any) {
+  async exportDashboard(dashboardType: string, format: 'pdf' | 'excel' | 'csv', _params: any) {
     // Implement export logic based on format
     logger.info(`Exporting ${dashboardType} as ${format}`);
     // Return file buffer

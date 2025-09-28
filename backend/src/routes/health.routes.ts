@@ -6,6 +6,11 @@ import { logger } from '../utils/logger';
 
 const router = Router();
 
+// Root index - return simple HTML to ensure 200 OK on '/'
+router.get('/', (_req: Request, res: Response) => {
+  res.status(200).send('<!doctype html><html><head><meta charset="utf-8"><title>Progress Tracker API</title><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><h1>Progress Tracker API</h1><p>Status: running</p></body></html>');
+});
+
 // Basic health check
 router.get('/health', (_req: Request, res: Response) => {
   res.json({

@@ -24,6 +24,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Divider,
+  List,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import {
@@ -422,7 +424,5 @@ const Analytics: React.FC = () => {
   );
 };
 
-// Import statements need Divider and List
-import { Divider, List } from '@mui/material';
 
 export default Analytics;

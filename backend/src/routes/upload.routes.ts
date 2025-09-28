@@ -56,10 +56,11 @@ router.post('/single',
       }
 
       const user = (req as any).user;
-      logger.info(`File uploaded by ${user.email}:`, req.file.filename);
+      const uploadedFile = req.file as Express.Multer.File;
+      logger.info(`File uploaded by ${user.email}:`, uploadedFile.filename);
 
       // Process the file
-      const data = await processFile(req.file.path, req.file.mimetype);
+      const data = await processFile(uploadedFile.path, uploadedFile.mimetype);
 
       // Store in BigQuery
       const surveyData = data.map((row: any) => ({
@@ -99,8 +100,10 @@ router.post('/single',
       logger.error('Error processing upload:', error);
       
       // Clean up file on error
-      if (req.file && fs.existsSync(req.file.path)) {
-        fs.unlinkSync(uploadedFile.path);
+      // Attempt to remove uploaded file if present
+      const f = (req.file as Express.Multer.File | undefined);
+      if (f && fs.existsSync(f.path)) {
+        fs.unlinkSync(f.path);
       }
       
       return res.status(500).json({

@@ -5,6 +5,8 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
+import path from 'path';
+import fs from 'fs';
 
 // Load environment variables
 dotenv.config();
@@ -105,6 +107,16 @@ class Server {
     this.app.use('/api/analytics', analyticsRoutes);
     this.app.use('/api/patients', patientsRoutes);
     this.app.use('/api/dashboards', dashboardRoutes);
+
+    // Serve frontend build if available
+    const buildPath = path.resolve(__dirname, '../../frontend/build');
+    if (fs.existsSync(buildPath)) {
+      this.app.use(express.static(buildPath));
+      this.app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api/')) return next();
+        res.sendFile(path.join(buildPath, 'index.html'));
+      });
+    }
 
     // 404 handler
     this.app.use('*', (req, res) => {

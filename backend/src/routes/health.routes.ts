@@ -6,6 +6,7 @@ import { logger } from '../utils/logger';
 
 const router = Router();
 
+
 // Basic health check
 router.get('/health', (_req: Request, res: Response) => {
   res.json({

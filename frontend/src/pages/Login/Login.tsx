@@ -35,7 +35,7 @@ const validationSchemaEmail = yup.object({
 const validationSchemaOTP = yup.object({
   otp: yup
     .string()
-    .matches(/^[0-9]{6}$/, 'OTP must be 6 digits')
+    .matches(/^[A-Za-z0-9]{5}$/i, 'OTP must be 5 letters or digits')
     .required('OTP is required'),
 });
 
@@ -210,11 +210,11 @@ const Login: React.FC = () => {
                     label="Enter OTP"
                     type="text"
                     value={otpForm.values.otp}
-                    onChange={otpForm.handleChange}
+                    onChange={(e) => otpForm.setFieldValue('otp', e.target.value.toUpperCase())}
                     error={otpForm.touched.otp && Boolean(otpForm.errors.otp)}
                     helperText={otpForm.touched.otp && otpForm.errors.otp}
                     disabled={loading}
-                    inputProps={{ maxLength: 6 }}
+                    inputProps={{ maxLength: 5, inputMode: 'text', pattern: '[A-Za-z0-9]+' }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">

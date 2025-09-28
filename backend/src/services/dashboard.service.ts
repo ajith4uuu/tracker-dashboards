@@ -1,37 +1,13 @@
 import { BigQuery } from '@google-cloud/bigquery';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logger } from '../utils/logger';
-import type {
-  ExecutiveOverviewDashboard,
-  ResponseQualityDashboard,
-  EngagementFunnelDashboard,
-  CAHPSDashboard,
-  PROMISDashboard,
-  CohortComparisonDashboard,
-  LongitudinalChangeDashboard,
-  TextInsightsDashboard,
-  OperationsSLADashboard,
-  DataHealthDashboard,
-  Patient360Dashboard,
-  PatientJourneyMap,
-  RiskAlertingDashboard,
-  AdherenceActivityDashboard,
-  SymptomTrajectoriesDashboard,
-  CareTeamPanelDashboard,
-  EquityLensDashboard,
-  InterventionOutcomesDashboard,
-  PROMISScorecardDashboard,
-  ExperienceOutcomesDashboard,
-} from '../../types/dashboards';
 
 const bigquery = new BigQuery();
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 class DashboardService {
   private dataset = process.env.BIGQUERY_DATASET || 'progress_tracker';
 
   // 1. Executive Overview Dashboard
-  async getExecutiveOverview(timeRange: string): Promise<ExecutiveOverviewDashboard> {
+  async getExecutiveOverview(timeRange: string): Promise<any> {
     try {
       const daysAgo = this.parseTimeRange(timeRange);
       
@@ -157,7 +133,7 @@ class DashboardService {
   }
 
   // 2. Response Quality Dashboard
-  async getResponseQuality(params: any): Promise<ResponseQualityDashboard> {
+  async getResponseQuality(params: any): Promise<any> {
     try {
       // Get item non-response rates
       const nonResponseQuery = `
@@ -285,7 +261,7 @@ class DashboardService {
   }
 
   // 3. Engagement Funnel Dashboard
-  async getEngagementFunnel(params: any): Promise<EngagementFunnelDashboard> {
+  async getEngagementFunnel(params: any): Promise<any> {
     try {
       const funnelQuery = `
         SELECT 
@@ -330,7 +306,7 @@ class DashboardService {
   }
 
   // 11. Patient 360 Dashboard
-  async getPatient360(patientId: string): Promise<Patient360Dashboard> {
+  async getPatient360(patientId: string): Promise<any> {
     try {
       // Get latest PRO scores
       const scoresQuery = `
@@ -449,7 +425,7 @@ class DashboardService {
   }
 
   // 12. Patient Journey Map
-  async getPatientJourneyMap(patientId: string): Promise<PatientJourneyMap> {
+  async getPatientJourneyMap(patientId: string): Promise<any> {
     try {
       // Get all patient events
       const eventsQuery = `
@@ -534,7 +510,7 @@ class DashboardService {
   }
 
   // 4. CAHPS Dashboard
-  async getCAHPSMetrics(_params: any): Promise<CAHPSDashboard> {
+  async getCAHPSMetrics(_params: any): Promise<any> {
     return {
       domains: {
         provider: { topBoxPercent: 0, score: 0, items: [] },
@@ -548,7 +524,7 @@ class DashboardService {
   }
 
   // 5. PROMIS Domain Scores Dashboard
-  async getPROMISScores(_params: any): Promise<PROMISDashboard> {
+  async getPROMISScores(_params: any): Promise<any> {
     return {
       domains: [],
       clinicallyMeaningfulChange: { improved: [], worsened: [], stable: [] },
@@ -558,7 +534,7 @@ class DashboardService {
   }
 
   // 6. Cohort Comparisons Dashboard
-  async getCohortComparisons(_params: any): Promise<CohortComparisonDashboard> {
+  async getCohortComparisons(_params: any): Promise<any> {
     return {
       comparisons: [],
       statisticalTests: { pValue: 1, effectSize: 0, interpretation: 'no difference' },
@@ -567,7 +543,7 @@ class DashboardService {
   }
 
   // 7. Longitudinal Change Dashboard
-  async getLongitudinalChange(_params: any): Promise<LongitudinalChangeDashboard> {
+  async getLongitudinalChange(_params: any): Promise<any> {
     return {
       trajectories: { preIntervention: [], postIntervention: [], changeScore: 0, pValue: 1 },
       followUpPoints: [],
@@ -576,7 +552,7 @@ class DashboardService {
   }
 
   // 8. Text Insights Dashboard
-  async getTextInsights(_params: any): Promise<TextInsightsDashboard> {
+  async getTextInsights(_params: any): Promise<any> {
     return {
       themes: [],
       sentimentByTheme: {},
@@ -585,7 +561,7 @@ class DashboardService {
   }
 
   // 9. Operations & SLA Dashboard
-  async getOperationsSLA(_params: any): Promise<OperationsSLADashboard> {
+  async getOperationsSLA(_params: any): Promise<any> {
     return {
       invitationThroughput: { sent: 0, delivered: 0, opened: 0, ratePerHour: 0 },
       bounceMetrics: { bounceRate: 0, undeliverableRate: 0, invalidEmails: [] },
@@ -595,7 +571,7 @@ class DashboardService {
   }
 
   // 10. Data Health Dashboard
-  async getDataHealth(): Promise<DataHealthDashboard> {
+  async getDataHealth(): Promise<any> {
     return {
       dataQuality: { completeness: 0, accuracy: 0, consistency: 0, timeliness: 0 },
       anomalies: { lateSubmissions: 0, duplicates: 0, schemaDrift: [] },
@@ -614,7 +590,7 @@ class DashboardService {
   }
 
   // 14. Adherence & Activity Dashboard
-  async getAdherenceActivity(_params: any): Promise<AdherenceActivityDashboard> {
+  async getAdherenceActivity(_params: any): Promise<any> {
     return {
       completionCadence: { onTime: 0, late: 0, missed: 0 },
       missedWindows: [],
@@ -623,7 +599,7 @@ class DashboardService {
   }
 
   // 15. Symptom Trajectories Dashboard
-  async getSymptomTrajectories(_params: any): Promise<SymptomTrajectoriesDashboard> {
+  async getSymptomTrajectories(_params: any): Promise<any> {
     return {
       trajectoryPlots: { type: 'spaghetti', data: [] },
       responderAnalysis: { responders: [], nonResponders: [], undetermined: [], criteria: '' },
@@ -632,7 +608,7 @@ class DashboardService {
   }
 
   // 16. Care Team Panel Dashboard
-  async getCareTeamPanel(_clinicianId: string): Promise<CareTeamPanelDashboard> {
+  async getCareTeamPanel(_clinicianId: string): Promise<any> {
     return {
       workload: {},
       highRiskQueue: [],
@@ -641,7 +617,7 @@ class DashboardService {
   }
 
   // 17. Equity Lens Dashboard
-  async getEquityLens(_params: any): Promise<EquityLensDashboard> {
+  async getEquityLens(_params: any): Promise<any> {
     return {
       disparities: [],
       smallCellSuppression: true,
@@ -650,7 +626,7 @@ class DashboardService {
   }
 
   // 18. Intervention Outcomes Dashboard
-  async getInterventionOutcomes(_params: any): Promise<InterventionOutcomesDashboard> {
+  async getInterventionOutcomes(_params: any): Promise<any> {
     return {
       cohorts: { before: { n: 0, mean: 0, sd: 0 }, after: { n: 0, mean: 0, sd: 0 } },
       effectSize: { cohensD: 0, ci95: [0, 0], interpretation: 'none' },
@@ -659,7 +635,7 @@ class DashboardService {
   }
 
   // 19. PROMIS Scorecard Dashboard
-  async getPROMISScorecard(_params: any): Promise<PROMISScorecardDashboard> {
+  async getPROMISScorecard(_params: any): Promise<any> {
     return {
       tScoreDistribution: { histogram: [], mean: 0, median: 0, sd: 0 },
       normComparison: { aboveNorm: 0, atNorm: 0, belowNorm: 0 },
@@ -668,7 +644,7 @@ class DashboardService {
   }
 
   // 20. Experience + Outcomes Dashboard
-  async getExperienceOutcomes(_params: any): Promise<ExperienceOutcomesDashboard> {
+  async getExperienceOutcomes(_params: any): Promise<any> {
     return {
       correlations: [],
       improvementLevers: [],

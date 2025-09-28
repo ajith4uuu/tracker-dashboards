@@ -63,7 +63,7 @@ router.get('/',
         params: search ? { search: `%${search}%` } : {},
       });
 
-      res.json({
+      return res.json({
         success: true,
         patients,
         pagination: {
@@ -75,7 +75,7 @@ router.get('/',
       });
     } catch (error) {
       logger.error('Error fetching patients:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to fetch patients',
       });
@@ -94,7 +94,7 @@ router.get('/:patientId/journey',
       // Generate AI insights for the patient journey
       const insights = await geminiService.analyzePatientJourney(journey);
 
-      res.json({
+      return res.json({
         success: true,
         journey: {
           ...journey,
@@ -107,7 +107,7 @@ router.get('/:patientId/journey',
       });
     } catch (error) {
       logger.error('Error fetching patient journey:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to fetch patient journey',
       });
@@ -151,7 +151,7 @@ router.get('/:patientId/timeline',
         params,
       });
 
-      res.json({
+      return res.json({
         success: true,
         patientId,
         timeline: timeline.map((event: any) => ({
@@ -163,7 +163,7 @@ router.get('/:patientId/timeline',
       });
     } catch (error) {
       logger.error('Error fetching patient timeline:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to fetch patient timeline',
       });
@@ -229,7 +229,7 @@ router.get('/:patientId/analytics',
         params: { patientId },
       });
 
-      res.json({
+      return res.json({
         success: true,
         patientId,
         analytics: {
@@ -239,7 +239,7 @@ router.get('/:patientId/analytics',
       });
     } catch (error) {
       logger.error('Error fetching patient analytics:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to fetch patient analytics',
       });
@@ -280,13 +280,13 @@ router.post('/:patientId/notes',
 
       await bigqueryService.insertSurveyData(noteData);
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Note added successfully',
       });
     } catch (error) {
       logger.error('Error adding patient note:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to add note',
       });
@@ -317,7 +317,7 @@ router.get('/:patientId/notes',
         params: { patientId },
       });
 
-      res.json({
+      return res.json({
         success: true,
         notes: notes.map((note: any) => ({
           timestamp: note.timestamp,
@@ -328,7 +328,7 @@ router.get('/:patientId/notes',
       });
     } catch (error) {
       logger.error('Error fetching patient notes:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to fetch notes',
       });
@@ -378,7 +378,7 @@ router.get('/:patientId/risk',
         type: 'patterns',
       });
 
-      res.json({
+      return res.json({
         success: true,
         patientId,
         riskAssessment: {
@@ -391,7 +391,7 @@ router.get('/:patientId/risk',
       });
     } catch (error) {
       logger.error('Error generating risk assessment:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to generate risk assessment',
       });

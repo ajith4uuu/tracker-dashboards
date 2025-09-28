@@ -5,6 +5,8 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
+import path from 'path';
+import fs from 'fs';
 
 // Load environment variables
 dotenv.config();

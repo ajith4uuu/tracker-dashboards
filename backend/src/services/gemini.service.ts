@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logger } from '../utils/logger';
 
 interface InsightRequest {
@@ -17,8 +18,8 @@ interface InsightResponse {
 }
 
 class GeminiService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+  private genAI?: GoogleGenerativeAI;
+  private model?: any;
   private apiKey: string;
   private modelName: string;
 

@@ -35,7 +35,6 @@ import {
   Note,
   Add,
   CheckCircle,
-  Error as ErrorIcon,
 } from '@mui/icons-material';
 import {
   LineChart,
@@ -46,11 +45,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { patientsAPI } from '../../services/api/patientsAPI';

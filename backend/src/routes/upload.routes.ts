@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import * as XLSX from 'xlsx';
 import { authMiddleware } from '../middleware/auth.middleware';
-import { bigqueryService } from '../services/bigquery.service';
+import { bigqueryService, bigquery } from '../services/bigquery.service';
 import { geminiService } from '../services/gemini.service';
 import { logger } from '../utils/logger';
 
@@ -85,7 +85,7 @@ router.post('/single',
       // Clean up uploaded file
       fs.unlinkSync(req.file.path);
 
-      res.json({
+      return res.json({
         success: true,
         message: 'File uploaded and processed successfully',
         data: {
@@ -103,7 +103,7 @@ router.post('/single',
         fs.unlinkSync(req.file.path);
       }
       
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to process uploaded file',
       });
@@ -177,7 +177,7 @@ router.post('/multiple',
         context: 'Batch file upload results',
       });
 
-      res.json({
+      return res.json({
         success: true,
         message: `Processed ${files.length} files`,
         results,
@@ -185,7 +185,7 @@ router.post('/multiple',
       });
     } catch (error) {
       logger.error('Error in multiple file upload:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to process uploaded files',
       });
@@ -212,21 +212,18 @@ router.get('/history',
         LIMIT 100
       `;
 
-      const bigquery = new BigQuery({
-        projectId: process.env.GCP_PROJECT_ID,
-      });
       const [rows] = await bigquery.query({
         query,
         params: { uploadedBy: user.email },
       });
 
-      res.json({
+      return res.json({
         success: true,
         uploads: rows,
       });
     } catch (error) {
       logger.error('Error fetching upload history:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to fetch upload history',
       });

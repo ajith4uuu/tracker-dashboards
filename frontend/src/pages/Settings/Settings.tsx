@@ -23,8 +23,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Chip,
 } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import {
   Save,
   Delete,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -11,7 +11,6 @@ import {
   Chip,
   Avatar,
   Button,
-  TablePagination,
   CircularProgress,
   Alert,
 } from '@mui/material';
@@ -38,7 +37,7 @@ const Patients: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortModel, setSortModel] = useState<any>([]);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['patients', paginationModel.page, paginationModel.pageSize, searchQuery, sortModel],
     queryFn: async () => {
       const response = await patientsAPI.getPatients({

@@ -12,14 +12,14 @@ const router = Router();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     const uploadDir = 'uploads';
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     cb(null, uploadDir);
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
@@ -30,7 +30,7 @@ const upload = multer({
   limits: {
     fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     const allowedTypes = process.env.ALLOWED_FILE_TYPES?.split(',') || ['.csv', '.xlsx', '.xls'];
     const ext = path.extname(file.originalname).toLowerCase();
     
@@ -231,7 +231,7 @@ router.get('/history',
 });
 
 // Process file based on type
-async function processFile(filePath: string, mimeType: string): Promise<any[]> {
+async function processFile(filePath: string, _mimeType: string): Promise<any[]> {
   const ext = path.extname(filePath).toLowerCase();
 
   if (ext === '.csv') {

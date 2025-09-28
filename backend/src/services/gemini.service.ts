@@ -18,8 +18,8 @@ interface InsightResponse {
 }
 
 class GeminiService {
-  private genAI?: GoogleGenerativeAI;
-  private model?: any;
+  private genAI: GoogleGenerativeAI | null = null;
+  private model: any | null = null;
   private apiKey: string;
   private modelName: string;
 
